@@ -9,7 +9,7 @@ Run (Python, no dependencies):
 python .claude/skills/calculate-car-score/scripts/score.py --year 2018 --price 38000 --mileage 90000 --hand 2 --hp 90
 ```
 
-Output: JSON with `score` (average of factors) and per-factor `factors`. Report the score; don't recompute by hand.
+Output: JSON with `score` (average of factors) and per-factor `factors`. **Return the script's raw JSON output exactly as printed** (no reformatting, tables or commentary unless asked). Don't recompute by hand.
 
 Each factor is linear and clamped to 0-100:
 

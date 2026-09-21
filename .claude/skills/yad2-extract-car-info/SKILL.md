@@ -7,7 +7,7 @@ description: Extract a Yad2 vehicle listing (URL or token) into structured JSON 
 python .claude/skills/yad2-extract-car-info/scripts/extract.py <url-or-token>
 ```
 
-Outputs one JSON line (only the fields above + url) (UTF-8, Hebrew values). Feed `year`, `price`, `km`, `hand`, `hp` to the `calculate-car-score` skill.
+Outputs one JSON line (only the fields above + url; UTF-8, Hebrew values). **Return the script's raw JSON output exactly as printed** (no translating, reformatting or commentary unless asked). Feed `year`, `price`, `km`, `hand`, `hp` to the `calculate-car-score` skill.
 
 **Why a browser:** Yad2 is behind Radware bot protection. Plain HTTP and default headless Chromium get blocked. The script uses Playwright with real Chrome (falls back to bundled Chromium), a normal UA and the automation flag removed, then reads the page's embedded `__NEXT_DATA__` JSON.
 
