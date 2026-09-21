@@ -21,7 +21,7 @@ Spawn ONE sub-agent (Agent tool, `general-purpose`, `model: "sonnet"`, run in fo
 >   "score_factors": { <per-factor values from score script> },
 >   "reliability_score": <1-10 number>,
 >   "reliability_confidence": "high|med|low",
->   "reliability_summary": "<2-3 sentence summary: why this score, main known issues with km/cost if found>"
+>   "reliability_summary": "<4-6 sentence summary of what the research concluded: overall verdict and why, the specific engine/gearbox findings, main known issues with typical km/cost, any conflicting evidence or thin data, and which sources it rests on>"
 > }
 > ```
 
