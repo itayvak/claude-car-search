@@ -76,6 +76,7 @@ def summarize(d, url):
         "manufacturer": txt(d, "manufacturer"),
         "model": txt(d, "model"),
         "sub_model": txt(d, "subModel"),
+        "gearbox": txt(d, "gearBox"),
         "color": txt(d, "color"),
         "year": vd.get("yearOfProduction"),
         "price": d.get("price"),  # None/0 = no price (teaser)

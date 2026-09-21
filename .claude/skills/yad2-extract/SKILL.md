@@ -1,6 +1,6 @@
 ---
 name: yad2-extract
-description: Extract a Yad2 vehicle listing (URL or token) into structured JSON - score inputs (year, price, km, hand, hp) plus manufacturer, model, sub_model, color, description. Use whenever the user gives a yad2.co.il/vehicles/item link or asks to check/screen a listing.
+description: Extract a Yad2 vehicle listing (URL or token) into structured JSON - score inputs (year, price, km, hand, hp) plus manufacturer, model, sub_model, gearbox, color, description. Use whenever the user gives a yad2.co.il/vehicles/item link or asks to check/screen a listing.
 ---
 
 ```
@@ -17,4 +17,4 @@ Outputs one JSON line (only the fields above + url) (UTF-8, Hebrew values). Feed
 - Exit 2 `blocked_by_bot_protection`: datacenter IPs may get a captcha. Set `YAD2_PROXY` (residential/Israeli proxy) or `YAD2_HEADED=1` under `xvfb-run`.
 - Exit 3: no listing data (expired/removed listing).
 
-**Reading the output:** `price` None/0 means a teaser with no real price. Check `description` for financing/lease-only terms before trusting `price`. `sub_model` usually states the gearbox and engine.
+**Reading the output:** `price` None/0 means a teaser with no real price. Check `description` for financing/lease-only terms before trusting `price`. Only automatic gearboxes qualify (no manual license).
