@@ -11,6 +11,7 @@ Spawn ONE sub-agent (Agent tool, `general-purpose`, `model: "sonnet"`, run in fo
 > 1. `yad2-extract-car-info` on the input. If it fails (exit 2/3) or `price` is null/0, return `{"error": "<reason>", "url": "<input>"}` and stop.
 > 2. `calculate-car-score` with the extracted `year`, `price`, `km` (as mileage), `hand`, `hp`.
 > 3. `car-reliability-check` with `manufacturer`, `model`, `year`, and the engine/gearbox from `sub_model`/`gearbox`.
+> 4. Save the result: write the JSON below to a temp file in the scratchpad and run `python .claude/skills/screen-car-listing/scripts/save_csv.py < <file>`. It appends to `cars.csv` (skips duplicates by token; ignore its output).
 >
 > Return ONLY this JSON, no other text:
 > ```
