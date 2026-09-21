@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Car Search Results</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body class="bg-body-tertiary">
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="h3 mb-0">Car Search Results</h1>
+    <div class="d-flex gap-2">
+      <select id="sort" class="form-select form-select-sm">
+        <option value="score">Sort: Score</option>
+        <option value="reliability_score">Sort: Reliability</option>
+        <option value="price">Sort: Price</option>
+        <option value="km">Sort: Mileage</option>
+        <option value="year">Sort: Year</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="loadError" class="alert alert-warning d-none">
+    Can't read <code>cars.csv</code> directly from a file. Pick it here, or serve the folder
+    (<code>python -m http.server</code>) and open <code>localhost:8000</code>.
+    <input id="file" type="file" accept=".csv" class="form-control form-control-sm mt-2">
+  </div>
+
+  <div id="stats" class="row g-3 mb-4"></div>
+
+  <div class="card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Car</th><th>Year</th><th class="text-end">Price</th><th class="text-end">Km</th>
+            <th>Hand</th><th>HP</th><th>Score</th><th>Reliability</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+let cars = [];
+const $ = id => document.getElementById(id);
+const num = v => Number(v) || 0;
+const fmt = n => num(n).toLocaleString('en-US');
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+function tone(v, hi, mid) { return v >= hi ? 'success' : v >= mid ? 'warning' : 'danger'; }
+
+function stat(label, value, sub) {
+  const col = el('div', 'col-6 col-md-3');
+  const card = el('div', 'card shadow-sm h-100');
+  const body = el('div', 'card-body');
+  body.append(el('div', 'text-body-secondary small', label), el('div', 'fs-4 fw-semibold', value));
+  if (sub) body.append(el('div', 'small text-truncate', sub));
+  card.append(body); col.append(card);
+  return col;
+}
+
+function render() {
+  const key = $('sort').value;
+  const asc = ['price', 'km'].includes(key);
+  const list = [...cars].sort((a, b) => asc ? num(a[key]) - num(b[key]) : num(b[key]) - num(a[key]));
+
+  const stats = $('stats'); stats.replaceChildren();
+  if (list.length) {
+    const best = [...cars].sort((a, b) => num(b.score) - num(a.score))[0];
+    const cheap = [...cars].sort((a, b) => num(a.price) - num(b.price))[0];
+    const name = c => `${c.manufacturer} ${c.model}`;
+    stats.append(
+      stat('Cars screened', cars.length),
+      stat('Top score', num(best.score).toFixed(1), name(best)),
+      stat('Cheapest', '₪' + fmt(cheap.price), name(cheap)),
+      stat('Avg score', (cars.reduce((s, c) => s + num(c.score), 0) / cars.length).toFixed(1))
+    );
+  }
+
+  const tbody = $('rows'); tbody.replaceChildren();
+  list.forEach((c, i) => {
+    const tr = el('tr');
+    const carCell = el('td');
+    carCell.append(el('div', 'fw-semibold', `${c.manufacturer} ${c.model}`),
+                   el('div', 'small text-body-secondary', c.sub_model),
+                   el('div', 'small text-body-secondary', `${c.gearbox} · ${c.color}`));
+    const scoreCell = el('td');
+    const bar = el('div', 'progress'); bar.style.height = '18px'; bar.style.minWidth = '80px';
+    const fill = el('div', `progress-bar bg-${tone(num(c.score), 70, 55)}`, num(c.score).toFixed(1));
+    fill.style.width = Math.min(100, num(c.score)) + '%';
+    bar.append(fill); scoreCell.append(bar);
+
+    const relCell = el('td');
+    relCell.append(el('span', `badge text-bg-${tone(num(c.reliability_score), 7, 5)}`, `${c.reliability_score}/10`),
+                   el('span', 'badge text-bg-light border ms-1', c.reliability_confidence));
+    relCell.title = c.reliability_summary;
+
+    const linkCell = el('td');
+    const a = el('a', 'btn btn-sm btn-outline-primary', 'Yad2');
+    a.href = /^https:\/\/www\.yad2\.co\.il\//.test(c.url) ? c.url : '#';
+    a.target = '_blank'; a.rel = 'noopener';
+    linkCell.append(a);
+
+    const cells = [carCell, el('td', '', c.year), el('td', 'text-end', '₪' + fmt(c.price)),
+      el('td', 'text-end', fmt(c.km)), el('td', '', c.hand), el('td', '', c.hp), scoreCell, relCell, linkCell];
+    tr.append(...cells);
+    tbody.append(tr);
+
+    // detail row: summary + description
+    const d = el('tr', 'table-light');
+    const dc = el('td', 'small text-body-secondary'); dc.colSpan = 9;
+    dc.append(el('div', '', 'Reliability: ' + c.reliability_summary), el('div', '', 'Listing: ' + c.description));
+    d.append(dc); tbody.append(d);
+  });
+}
+
+function load(text) {
+  cars = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
+  $('loadError').classList.add('d-none');
+  render();
+}
+
+$('sort').addEventListener('change', render);
+$('file').addEventListener('change', e => e.target.files[0]?.text().then(load));
+fetch('cars.csv').then(r => { if (!r.ok) throw 0; return r.text(); }).then(load)
+  .catch(() => $('loadError').classList.remove('d-none'));
+</script>
+</body>
+</html>
