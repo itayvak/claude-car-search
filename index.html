@@ -100,7 +100,7 @@ function render() {
     btn.type = 'button';
     btn.dataset.bsToggle = 'collapse'; btn.dataset.bsTarget = '#' + id;
     const box = el('div', 'collapse mt-1', c.reliability_summary); box.id = id;
-    dc.append(el('div', '', 'Listing: ' + c.description), btn, box);
+    dc.append(btn, box);
     d.append(dc); tbody.append(d);
   });
 }
