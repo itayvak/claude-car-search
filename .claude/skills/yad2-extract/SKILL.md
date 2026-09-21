@@ -7,7 +7,7 @@ description: Extract a Yad2 vehicle listing (URL or token) into structured JSON 
 python .claude/skills/yad2-extract/scripts/extract.py <url-or-token>
 ```
 
-Outputs one JSON line (only the fields above + url) (UTF-8, Hebrew values). Feed `year`, `price`, `km`, `hand`, `hp` to the `car-score` skill.
+Outputs one JSON line (only the fields above + url) (UTF-8, Hebrew values). Feed `year`, `price`, `km`, `hand`, `hp` to the `calculate-car-score` skill.
 
 **Why a browser:** Yad2 is behind Radware bot protection. Plain HTTP and default headless Chromium get blocked. The script uses Playwright with real Chrome (falls back to bundled Chromium), a normal UA and the automation flag removed, then reads the page's embedded `__NEXT_DATA__` JSON.
 
@@ -17,4 +17,4 @@ Outputs one JSON line (only the fields above + url) (UTF-8, Hebrew values). Feed
 - Exit 2 `blocked_by_bot_protection`: datacenter IPs may get a captcha. Set `YAD2_PROXY` (residential/Israeli proxy) or `YAD2_HEADED=1` under `xvfb-run`.
 - Exit 3: no listing data (expired/removed listing).
 
-**Reading the output:** `price` None/0 means a teaser with no real price. Check `description` for financing/lease-only terms before trusting `price`. Only automatic gearboxes qualify (no manual license).
+**Reading the output:** `price` None/0 means a teaser with no real price. Check `description` for financing/lease-only terms before trusting `price`.
