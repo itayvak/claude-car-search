@@ -1,10 +1,10 @@
 ---
-name: yad2-extract
+name: yad2-extract-car-info
 description: Extract a Yad2 vehicle listing (URL or token) into structured JSON - score inputs (year, price, km, hand, hp) plus manufacturer, model, sub_model, gearbox, color, description. Use whenever the user gives a yad2.co.il/vehicles/item link or asks to check/screen a listing.
 ---
 
 ```
-python .claude/skills/yad2-extract/scripts/extract.py <url-or-token>
+python .claude/skills/yad2-extract-car-info/scripts/extract.py <url-or-token>
 ```
 
 Outputs one JSON line (only the fields above + url) (UTF-8, Hebrew values). Feed `year`, `price`, `km`, `hand`, `hp` to the `calculate-car-score` skill.
