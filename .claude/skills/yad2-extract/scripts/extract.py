@@ -70,39 +70,19 @@ def txt(d, k):
 
 
 def summarize(d, url):
-    addr = d.get("address") or {}
     vd = d.get("vehicleDates") or {}
     return {
         "url": url,
-        "token": d.get("token"),
-        "ad_type": d.get("adType"),  # commercial = dealer
-        "dealer": (d.get("customer") or {}).get("agencyName"),
         "manufacturer": txt(d, "manufacturer"),
         "model": txt(d, "model"),
         "sub_model": txt(d, "subModel"),
+        "color": txt(d, "color"),
         "year": vd.get("yearOfProduction"),
-        "month": txt(vd, "monthOfProduction"),
-        "test_until": (vd.get("testDate") or "")[:10],
         "price": d.get("price"),  # None/0 = no price (teaser)
         "km": d.get("km"),
         "hand": (d.get("hand") or {}).get("id"),
-        "hand_text": txt(d, "hand"),
-        "prev_owner_type": txt(d, "owner"),
         "hp": d.get("horsePower"),
-        "engine_cc": d.get("engineVolume"),
-        "engine_type": txt(d, "engineType"),
-        "turbo": (d.get("specification") or {}).get("isTurbo"),
-        "gearbox": txt(d, "gearBox"),
-        "body": txt(d, "bodyType"),
-        "seats": d.get("seats"),
-        "color": txt(d, "color"),
-        "fuel_km_per_l": d.get("combinedFuelConsumption"),
-        "city": (addr.get("city") or {}).get("text"),
-        "area": (addr.get("area") or {}).get("text"),
-        "created": (d.get("dates") or {}).get("createdAt", "")[:10],
-        "updated": (d.get("dates") or {}).get("updatedAt", "")[:10],
-        "tags": [t.get("text") for t in d.get("carTag") or []],
-        "description": ((d.get("metaData") or {}).get("description") or "")[:800],
+        "description": (d.get("metaData") or {}).get("description") or "",
     }
 
 
