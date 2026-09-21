@@ -8,6 +8,7 @@ RANGES = {
     "price": (1_500, 50_000),      # ILS
     "mileage": (50_000, 160_000),  # km
     "hand": (1, 6),
+    "hp": (100, 45),
 }
 
 
@@ -28,6 +29,7 @@ if __name__ == "__main__":
     ap.add_argument("--price", type=float, required=True, help="ILS")
     ap.add_argument("--mileage", type=float, required=True, help="km")
     ap.add_argument("--hand", type=int, required=True)
+    ap.add_argument("--hp", type=float, required=True, help="horsepower")
     a = ap.parse_args()
-    total, parts = car_score(year=a.year, price=a.price, mileage=a.mileage, hand=a.hand)
+    total, parts = car_score(year=a.year, price=a.price, mileage=a.mileage, hand=a.hand, hp=a.hp)
     print(json.dumps({"score": total, "factors": parts}))
