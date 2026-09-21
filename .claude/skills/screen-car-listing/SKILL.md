@@ -20,7 +20,7 @@ Spawn ONE sub-agent (Agent tool, `general-purpose`, run in foreground) with this
 >   "score_factors": { <per-factor values from score script> },
 >   "reliability_score": <1-10 number>,
 >   "reliability_confidence": "high|med|low",
->   "reliability_notes": ["<why + known issues, short bullets, with km/cost if found>"]
+>   "reliability_summary": "<2-3 sentence summary: why this score, main known issues with km/cost if found>"
 > }
 > ```
 
