@@ -5,7 +5,7 @@ description: Full screening of one Yad2 listing via a sub-agent - extracts the c
 
 Input: a Yad2 listing URL or token.
 
-Spawn ONE sub-agent (Agent tool, `general-purpose`, run in foreground) with this prompt, substituting `<input>`:
+Spawn ONE sub-agent (Agent tool, `general-purpose`, `model: "sonnet"`, run in foreground) with this prompt, substituting `<input>`:
 
 > Screen this Yad2 listing: `<input>`. Work from the project root. Do these in order, using the project skills (Skill tool):
 > 1. `yad2-extract-car-info` on the input. If it fails (exit 2/3) or `price` is null/0, return `{"error": "<reason>", "url": "<input>"}` and stop.
