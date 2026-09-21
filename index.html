@@ -67,9 +67,7 @@ function render() {
   list.forEach((c, i) => {
     const tr = el('tr');
     const carCell = el('td');
-    carCell.append(el('div', 'fw-semibold', `${c.manufacturer} ${c.model}`),
-                   el('div', 'small text-body-secondary', c.sub_model),
-                   el('div', 'small text-body-secondary', `${c.gearbox} · ${c.color}`));
+    carCell.append(el('div', 'fw-semibold', `${c.manufacturer} ${c.model}`));
     const scoreCell = el('td');
     const bar = el('div', 'progress'); bar.style.height = '18px'; bar.style.minWidth = '80px';
     const fill = el('div', `progress-bar bg-${tone(num(c.score), 70, 55)}`, num(c.score).toFixed(1));
