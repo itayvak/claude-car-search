@@ -42,6 +42,7 @@
     </div>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 let cars = [];
@@ -94,7 +95,12 @@ function render() {
     // detail row: summary + description
     const d = el('tr', 'table-light');
     const dc = el('td', 'small text-body-secondary'); dc.colSpan = 9;
-    dc.append(el('div', '', 'Reliability: ' + c.reliability_summary), el('div', '', 'Listing: ' + c.description));
+    const id = 'rel-' + i;
+    const btn = el('button', 'btn btn-sm btn-link p-0', 'Reliability summary');
+    btn.type = 'button';
+    btn.dataset.bsToggle = 'collapse'; btn.dataset.bsTarget = '#' + id;
+    const box = el('div', 'collapse mt-1', c.reliability_summary); box.id = id;
+    dc.append(el('div', '', 'Listing: ' + c.description), btn, box);
     d.append(dc); tbody.append(d);
   });
 }
