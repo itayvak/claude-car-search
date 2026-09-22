@@ -8,7 +8,7 @@ Input: a Yad2 listing URL or token.
 Spawn ONE sub-agent (Agent tool, `general-purpose`, `model: "sonnet"`, run in foreground) with this prompt, substituting `<input>`:
 
 > Screen this Yad2 listing: `<input>`. Work from the project root. Do these in order, using the project skills (Skill tool):
-> 1. `yad2-extract-car-info` on the input. If it fails (exit 2/3) or `price` is null/0, return `{"error": "<reason>", "url": "<input>"}` and stop.
+> 1. `yad2-extract-car-info` on the input. If it fails (exit 2/3) or `price` is null/0, return `{"error": "<reason>", "url": "<input>"}` and stop. If `gearbox` indicates manual transmission (not automatic), return `{"error": "manual_transmission", "url": "<input>"}` and stop - Itay holds no manual licence, this is a hard rule.
 > 2. `calculate-car-score` with the extracted `year`, `price`, `km` (as mileage), `hand`, `hp`.
 > 3. `car-reliability-check` with `manufacturer`, `model`, `year`, and the engine/gearbox from `sub_model`/`gearbox`.
 > 4. Save the result: write the JSON below to a temp file in the scratchpad and run `python .claude/skills/screen-car-listing/scripts/save_csv.py < <file>`. It appends to `cars.csv` (skips duplicates by token; ignore its output).

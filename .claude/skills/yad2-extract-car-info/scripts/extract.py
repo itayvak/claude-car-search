@@ -9,15 +9,14 @@ Env: YAD2_PROXY (e.g. http://user:pass@host:port) for cloud IPs that get captcha
 Exit codes: 0 ok, 2 blocked by bot protection, 3 listing data not found.
 """
 import json
-import os
 import re
 import sys
+from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
-ARGS = ["--disable-blink-features=AutomationControlled", "--no-sandbox"]
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "_lib"))
+from yad2_browser import launch_page, wait_for_next_data
 
 
 def normalize(url):
@@ -31,28 +30,9 @@ def normalize(url):
 
 def fetch_next_data(url):
     with sync_playwright() as p:
-        opts = dict(headless=not os.environ.get("YAD2_HEADED"), args=ARGS,
-                    ignore_default_args=["--enable-automation"])
-        if os.environ.get("YAD2_PROXY"):
-            opts["proxy"] = {"server": os.environ["YAD2_PROXY"]}
-        try:
-            browser = p.chromium.launch(channel="chrome", **opts)
-        except Exception:  # Chrome not installed: fall back to bundled Chromium
-            browser = p.chromium.launch(**opts)
-        ctx = browser.new_context(locale="he-IL", timezone_id="Asia/Jerusalem",
-                                  user_agent=UA, viewport={"width": 1366, "height": 850})
-        ctx.add_init_script("Object.defineProperty(navigator,'webdriver',{get:()=>undefined})")
-        page = ctx.new_page()
+        browser, page = launch_page(p)
         page.goto(url, wait_until="domcontentloaded", timeout=45000)
-        raw = None
-        for _ in range(10):
-            page.wait_for_timeout(2500)
-            if "Radware" in page.title():
-                continue
-            raw = page.evaluate("document.getElementById('__NEXT_DATA__')?.textContent")
-            if raw:
-                break
-        blocked = "Radware" in page.title()
+        raw, blocked = wait_for_next_data(page)
         browser.close()
     return raw, blocked
 
