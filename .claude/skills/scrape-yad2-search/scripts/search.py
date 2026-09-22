@@ -80,8 +80,12 @@ CARD_FALLBACK_JS = """
 """
 
 
-def build_url(max_price, min_year, page_num):
+def build_url(max_price, min_year, page_num, manufacturer=None, model=None):
     params = []
+    if manufacturer is not None:
+        params.append(f"manufacturer={manufacturer}")
+    if model is not None:
+        params.append(f"model={model}")
     if max_price is not None:
         params.append(f"price=0-{max_price}")
     if min_year is not None:
@@ -116,6 +120,8 @@ def main():
     ap.add_argument("--max-price", type=int, default=None)
     ap.add_argument("--min-year", type=int, default=None)
     ap.add_argument("--max-pages", type=int, default=5)
+    ap.add_argument("--manufacturer", type=int, default=None, help="Yad2 manufacturer id")
+    ap.add_argument("--model", type=int, default=None, help="Yad2 model id")
     args = ap.parse_args()
 
     candidates = []
@@ -125,7 +131,7 @@ def main():
         browser, page = launch_page(p)
 
         for page_num in range(1, args.max_pages + 1):
-            url = build_url(args.max_price, args.min_year, page_num)
+            url = build_url(args.max_price, args.min_year, page_num, args.manufacturer, args.model)
             feed, blocked = load_feed(page, url)
             if blocked:
                 print(json.dumps({"error": "blocked_by_bot_protection"}, ensure_ascii=False))
