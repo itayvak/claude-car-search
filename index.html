@@ -19,6 +19,8 @@
         <option value="km">Sort: Mileage</option>
         <option value="year">Sort: Year</option>
       </select>
+      <button id="enableEdit" class="btn btn-sm btn-outline-secondary">Enable editing</button>
+      <span id="editStatus" class="small text-body-secondary align-self-center"></span>
     </div>
   </div>
 
@@ -34,7 +36,7 @@
         <thead class="table-light">
           <tr>
             <th>Car</th><th>Year</th><th class="text-end">Price</th><th class="text-end">Km</th>
-            <th>Hand</th><th>HP</th><th>Score</th><th>Reliability</th><th></th>
+            <th>Hand</th><th>HP</th><th>Score</th><th>Reliability</th><th>Status</th><th></th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
@@ -46,9 +48,22 @@
 
 <script>
 let cars = [];
+let fileHandle = null;
 const $ = id => document.getElementById(id);
 const num = v => Number(v) || 0;
 const fmt = n => num(n).toLocaleString('en-US');
+const CSV_COLUMNS = ['date_screened','token','url','manufacturer','model','sub_model','year','price',
+  'km','hand','hp','gearbox','color','score','reliability_score','reliability_confidence',
+  'reliability_summary','description','status'];
+const STATUS_OPTIONS = ['', 'interested', 'not interested', 'contacted'];
+const STATUS_ROW_CLASS = { interested: 'table-success', 'not interested': 'table-danger', contacted: 'table-info' };
+
+async function save() {
+  if (!fileHandle) { alert('Click "Enable editing" first and pick cars.csv.'); return; }
+  const writable = await fileHandle.createWritable();
+  await writable.write(Papa.unparse(cars, { columns: CSV_COLUMNS }));
+  await writable.close();
+}
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -65,7 +80,7 @@ function render() {
 
   const tbody = $('rows'); tbody.replaceChildren();
   list.forEach((c, i) => {
-    const tr = el('tr');
+    const tr = el('tr', STATUS_ROW_CLASS[c.status] || '');
     const carCell = el('td');
     carCell.append(el('div', 'fw-semibold', `${c.manufacturer} ${c.model}`));
     const scoreCell = el('td');
@@ -79,6 +94,13 @@ function render() {
                    el('span', 'badge text-bg-light border ms-1', c.reliability_confidence));
     relCell.title = c.reliability_summary;
 
+    const statusCell = el('td');
+    const statusSelect = el('select', 'form-select form-select-sm');
+    STATUS_OPTIONS.forEach(opt => statusSelect.append(new Option(opt || '—', opt)));
+    statusSelect.value = c.status || '';
+    statusSelect.addEventListener('change', e => { c.status = e.target.value; save(); render(); });
+    statusCell.append(statusSelect);
+
     const linkCell = el('td');
     const a = el('a', 'btn btn-sm btn-outline-primary', 'Yad2');
     a.href = /^https:\/\/www\.yad2\.co\.il\//.test(c.url) ? c.url : '#';
@@ -86,13 +108,13 @@ function render() {
     linkCell.append(a);
 
     const cells = [carCell, el('td', '', c.year), el('td', 'text-end', '₪' + fmt(c.price)),
-      el('td', 'text-end', fmt(c.km)), el('td', '', c.hand), el('td', '', c.hp), scoreCell, relCell, linkCell];
+      el('td', 'text-end', fmt(c.km)), el('td', '', c.hand), el('td', '', c.hp), scoreCell, relCell, statusCell, linkCell];
     tr.append(...cells);
     tbody.append(tr);
 
     // detail row: summary + description
     const d = el('tr', 'table-light');
-    const dc = el('td', 'small text-body-secondary'); dc.colSpan = 9;
+    const dc = el('td', 'small text-body-secondary'); dc.colSpan = 10;
     const id = 'rel-' + i;
     const btn = el('button', 'btn btn-sm btn-link p-0', 'Reliability summary');
     btn.type = 'button';
@@ -111,6 +133,13 @@ function load(text) {
 
 $('sort').addEventListener('change', render);
 $('file').addEventListener('change', e => e.target.files[0]?.text().then(load));
+$('enableEdit').addEventListener('click', async () => {
+  if (!window.showOpenFilePicker) { alert('Editing needs Chrome or Edge (File System Access API).'); return; }
+  try {
+    [fileHandle] = await window.showOpenFilePicker({ types: [{ description: 'CSV', accept: { 'text/csv': ['.csv'] } }] });
+    $('editStatus').textContent = 'Editing: ' + fileHandle.name;
+  } catch (e) { /* user cancelled */ }
+});
 fetch('cars.csv').then(r => { if (!r.ok) throw 0; return r.text(); }).then(load)
   .catch(() => $('loadError').classList.remove('d-none'));
 </script>
