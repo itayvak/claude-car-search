@@ -1,6 +1,6 @@
 ---
 name: scrape-yad2-search
-description: Sweep Yad2's used-car search results for listings matching Itay's criteria, rather than checking a single link he already has. Applies budget/year filters via the search URL, screens results for relevance, and runs the screen-car-listing skill (one sub-agent per candidate, in parallel) to extract, score, reliability-check and save each relevant new car to cars.csv. Trigger on things like "scan Yad2 for cars", "sweep Yad2 for automatics under budget", "go find some options on Yad2 and add anything good". For a single pasted listing link, use screen-car-listing directly instead.
+description: Sweep Yad2's used-car search results for listings matching Itay's criteria, rather than checking a single link he already has. Applies budget/year filters via the search URL, screens results for relevance, and runs the screen-car-listing skill (one sub-agent per candidate, in parallel) to extract, score, reliability-check and save each relevant new car to the car database doc. Trigger on things like "scan Yad2 for cars", "sweep Yad2 for automatics under budget", "go find some options on Yad2 and add anything good". For a single pasted listing link, use screen-car-listing directly instead.
 ---
 
 # Yad2 search sweep into the car database
@@ -40,7 +40,7 @@ From the candidates array:
 
 ## 4. Dedup against the database
 
-Read `cars.csv` (if it exists), collect existing `token` values, drop any survivor whose token is already present.
+The database is the "Car Search — Database & Display" Claude Doc: `https://claude.ai/artifact/Mw9SDU8jNfZKTLJv5XmB69` (Notes tab holds one heading per car with its token). Read the Notes tab, collect the tokens already present, drop any survivor whose token is already present.
 
 ## 5. Cap deep extraction
 
@@ -48,11 +48,11 @@ Cap the remaining candidates at 20 for this run unless Itay asked for more. If m
 
 ## 6. Deep screen
 
-For the capped list, follow `screen-car-listing`'s own documented pattern: one `Agent` tool call per listing URL (`https://www.yad2.co.il/vehicles/item/<token>`), all batched into a single message (parallel). It extracts, checks gearbox (skips manual transmission - `{"error": "manual_transmission", ...}`), scores, runs the reliability check, and saves to `cars.csv` itself. Use only this repo's skills (`yad2-extract-car-info`, `calculate-car-score`, `car-reliability-check`, `screen-car-listing`) - never a global/plugin skill.
+For the capped list, follow `screen-car-listing`'s own documented pattern: one `Agent` tool call per listing URL (`https://www.yad2.co.il/vehicles/item/<token>`), all batched into a single message (parallel). Each sub-agent extracts, checks gearbox (skips manual transmission - `{"error": "manual_transmission", ...}`), scores, and runs the reliability check, returning JSON only - it does NOT write to the doc. Use only this repo's skills (`yad2-extract-car-info`, `calculate-car-score`, `car-reliability-check`, `screen-car-listing`) - never a global/plugin skill.
 
-## 7. Commit once
+## 7. Save once
 
-After all sub-agents return, `git add cars.csv`, one commit with today's date/time as the message (per CLAUDE.md), then push. One commit for the whole sweep, not one per listing, since sub-agents write `cars.csv` concurrently and per-listing commits would race/spam.
+After all sub-agents return, append every non-error, non-duplicate result to the doc yourself, one at a time in order (per `screen-car-listing`'s doc-write instructions) - never let sub-agents write the doc concurrently.
 
 ## 8. Report
 
